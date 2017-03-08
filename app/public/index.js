@@ -1,13 +1,115 @@
-let theCanvas = document.getElementById("canvasOne");
-let ctx = theCanvas.getContext("2d");
+const theCanvas = document.getElementById("canvasOne");
+const ctx = theCanvas.getContext("2d");
 
-var guesses = 0;
-var message = "Вгадай букву починаючи від А - (меншого) до Я (більшого)";
-var letters = [
+
+const staticText = {
+  "intro" : "Вгадай букву починаючи від А - (меншого) до Я (більшого)",
+  "wrongCharacter" : "Це не літера",
+  "before" : "Перед",
+  "after" : "Після",
+  "maxTries" : "Максимальна кількість спроб",
+  "tip" : "Загадана буква ПОЗА чи ПЕРЕД введеною",
+  "finalMsg" : "Ура! Загадана буква",
+  "triesLimitOver" : "Перевищено ліміт спроб"
+
+};
+
+const letters = [
   "а","б","в","г","д","е","є","ж","з","и","і","ї","й","к","л",
   "м","н","о","п","р", "с", "м","т","у","ф","х","ц", "ч", "ш", "щ", "ь", "ю", "я"
 ];
-var today = new Date().toLocaleString("uk", {
+
+class GuessLetterGame {
+
+  constructor(lettersList) {
+
+    if ( ~Object.prototype.toString.call(lettersList).search(/Array/) ) {
+      this.letters = lettersList;
+    } else {
+      throw new TypeError(`lettersList should be an array of letters for game. 
+                            Got -> ${lettersList} | ${typeof lettersList} `)
+    }
+
+    this._initCore();
+
+
+
+  }
+
+  init() {
+    let letterIndex = Math.floor(Math.random() * this.letters.length);
+    this.letterToGuess = this.letters[letterIndex];
+    window.addEventListener("keypress", this._eventKeyPressed, true);
+    this.drawScreen();
+  }
+
+
+  _eventKeyPressed(e) {
+    if (!this.gameOver) {
+
+      let letterIndex, guessIndex;
+      let letterPressed = String.fromCharCode(e.keyCode).toLowerCase();
+      this.guesses++;
+
+
+      if (this.lettersGuessed.length <= this.maxTriesCount) {
+        this.lettersGuessed.push(letterPressed);
+      }
+
+
+      if (letterPressed == this.letterToGuess) {
+        this.gameOver = true;
+      } else {
+        letterIndex = letters.indexOf(letterToGuess);
+        guessIndex = letters.indexOf(letterPressed);
+
+        if (guessIndex < 0) {
+          this.higherOrLower = "Це не літера!";
+        } else if (guessIndex > letterIndex) {
+          this.higherOrLower = "Перед";
+        } else {
+          this.higherOrLower = "Після";
+        }
+      }
+      this._drawScreen();
+    }
+  }
+
+
+
+  _initCore() {
+    this.guesses = 0;
+    this.message = staticText.intro;
+
+    this.today = new Date().toLocaleString("uk", {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+      timezone: 'UTC',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric'
+    });
+
+    this.letterToGuess = "";
+    this.higherOrLower = "";
+    this.lettersGuessed = [];
+    this.gameOver = false;
+    this.maxTriesCount = 26;
+  };
+
+
+}
+
+
+
+var a = new GuessLetterGame(letters);
+
+let guesses = 0;
+let message = "Вгадай букву починаючи від А - (меншого) до Я (більшого)";
+
+let today = new Date().toLocaleString("uk", {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
@@ -17,10 +119,10 @@ var today = new Date().toLocaleString("uk", {
   minute: 'numeric',
   second: 'numeric'
 });
-var letterToGuess = "";
-var higherOrLower = "";
-var lettersGuessed;
-var gameOver = false;
+let letterToGuess = "";
+let higherOrLower = "";
+let lettersGuessed;
+let gameOver = false;
 
 
 function createImageDataPressed(e) {
